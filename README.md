@@ -130,10 +130,9 @@ These are projects from others.
 
 I use Python, Rust, JavaScript, Golang or whatever to make the list below done. 
 
-1. [Find the min and max value with f64](https://stackoverflow.com/questions/28247990/how-to-do-a-binary-search-on-a-vec-of-floats/28248065#28248065)
-2. GUI apps with Python such as Freelance manager, Tranlsator, Web scrapers caller etc.
-3. /forhire web scraper
-4. Make my own crate
+1. GUI apps with Python such as Freelance manager, Tranlsator, Web scrapers caller, Transaction etc.
+2. /forhire web scraper
+3. Make my own crate
 
 ## Contact
 

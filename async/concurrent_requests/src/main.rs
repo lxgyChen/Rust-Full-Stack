@@ -1,4 +1,5 @@
-// Make my own version with it.
+// Code here is not beautiful at all. But, I could make a prototype of what I wanted.
+// Organize here and use less code for the production file.
 
 // Code from: http://patshaughnessy.net/2020/1/20/downloading-100000-files-using-async-rust
 
@@ -8,6 +9,29 @@ use std::io::BufReader;
 use futures::stream::StreamExt;
 
 use serde_json::Value;
+
+use std::f64;
+
+trait FloatIterExt {
+    fn float_min(&mut self) -> f64;
+    fn float_max(&mut self) -> f64;
+}
+
+// Floating point type doesn't implement Ord.
+// So you write more code to make it work with NAN.
+impl<T> FloatIterExt for T where T: Iterator<Item=f64> {
+    // https://doc.rust-lang.org/std/primitive.f64.html#method.max
+    // Recursively compare it.
+    fn float_max(&mut self) -> f64 {
+        self.fold(f64::NAN, f64::max)
+    }
+
+    // https://doc.rust-lang.org/std/primitive.f64.html#method.min
+    // The same happens here
+    fn float_min(&mut self) -> f64 {
+        self.fold(f64::NAN, f64::min)
+    }
+}
 
 fn read_lines(file_name: &str) -> std::io::Result<Vec<String>> {
     let file = File::open(file_name)?;
@@ -23,7 +47,7 @@ struct Payload {
     price: Option<f64>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct End {
     target: String,
     price: f64,
@@ -85,6 +109,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|end| End { target: end.target, price: end.price.unwrap() })
         .collect::<Vec<End>>();
 
-    println!("{:#?}", &ends);
+    // println!("{:#?}", &ends);
+
+    let prices: Vec<f64> = ends.clone().into_iter().map(|end| end.price).collect::<Vec<f64>>();
+    // println!("{:#?}", &prices);
+
+    let p_max = prices.iter().cloned().float_max();
+    let p_min = prices.iter().cloned().float_min();
+
+    // println!("Buy at {}", &p_min);
+    // println!("Sell at {}", &p_max);
+    
+    let target_max: Vec<End> = ends.clone().into_iter().filter(|end| end.price == p_max).collect();
+    let target_min: Vec<End> = ends.clone().into_iter().filter(|end| end.price == p_min).collect();
+    
+    println!("\nBuy at {:#?}", &target_min[0].target); // Use vector or tuple here to indicate where to buy
+    println!("Sell at {:#?}", &target_max[0].target); 
+    
+    let margin = p_max - p_min;
+    // Should buy and sell automatically here with question to a user.
+    println!("You will get ${} in return.\n", margin.round());
+    
     Ok(())
 }
+
+// Find the max and min value
+// https://stackoverflow.com/questions/28247990/how-to-do-a-binary-search-on-a-vec-of-floats/28248065#28248065
